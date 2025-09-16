@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeeAlive Health Persona System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f7f9f4;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            color: #627282;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .info-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .info-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        
+        .info-box h3 {
+            color: #3a7d44;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .badge-r { background: #6fb98f; }
+        .badge-d { background: #ffd15c; }
+        .badge-n { background: #ff7e67; }
+        
+        .main-grid-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+        }
+        
+        .grid-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .persona-box {
+            aspect-ratio: 1;
+            background: white;
+            border: 3px solid #98c9a3;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 12px;
+            position: relative;
+        }
+        
+        .persona-box:hover {
+            transform: scale(1.05);
+            border-color: #6fb98f;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        
+        .persona-box.selected {
+            background: linear-gradient(135deg, #3a7d44, #6fb98f);
+            border-color: #3a7d44;
+            transform: scale(1.08);
+        }
+        
+        .persona-box.selected .persona-number,
+        .persona-box.selected .persona-name {
+            color: white;
+        }
+        
+        .persona-emoji {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+        
+        .persona-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3a7d44;
+            margin-bottom: 6px;
+        }
+        
+        .persona-name {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            line-height: 1.3;
+        }
+        
+        .axis-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .axis-x {
+            color: #3a7d44;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .axis-y {
+            color: #ffd15c;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+        
+        .instruction-box {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: #f7f9f4;
+            border-radius: 12px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 25px 30px 20px;
+            border-bottom: 1px solid #f7f9f4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #627282;
+            padding: 5px;
+        }
+        
+        .modal-tabs {
+            display: flex;
+            gap: 5px;
+            padding: 0 30px;
+            margin-top: 15px;
+        }
+        
+        .modal-tab {
+            padding: 10px 20px;
+            background: transparent;
+            color: #627282;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .modal-tab.active {
+            background: #3a7d44;
+            color: white;
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f7f9f4;
+        }
+        
+        .quote-box {
+            background: #f7f9f4;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3a7d44;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .strength-shadow-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .strength-box {
+            background: rgba(111, 185, 143, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(111, 185, 143, 0.4);
+        }
+        
+        .shadow-box {
+            background: rgba(255, 126, 103, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 126, 103, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .info-boxes {
+                grid-template-columns: 1fr;
+            }
+            
+            .strength-shadow-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .axis-y {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>The BeeAlive Health Persona System</h1>
+            <p class="subtitle">
+                Discover your unique health personality and unlock your personalized wellness journey
+            </p>
+        </header>
+
+        <div class="info-boxes">
+            <div class="info-box">
+                <h3>🧬 What is the Health Persona System?</h3>
+                <p>
+                    BeeAlive's Health Persona System is a revolutionary framework that identifies <strong>27 unique health personalities</strong> based on how individuals think about, approach, and manage their wellness.
+                </p>
+                <p style="margin-top: 15px;">
+                    Each of the <strong>9 core personas</strong> represents a unique position on our health map, with <strong>3 variations</strong> showing different readiness levels:
+                </p>
+                <div style="margin-top: 10px;">
+                    <span class="badge badge-r">R = Ready</span>
+                    <span class="badge badge-d">D = Developing</span>
+                    <span class="badge badge-n">N = Not Yet</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>🗺️ Understanding Your Position</h3>
+                <p><strong style="color: #3a7d44;">X-Axis: Ability to Manage</strong></p>
+                <p style="font-size: 0.9em; color: #627282; margin-bottom: 10px;">
+                    Your capacity to navigate health systems and implement strategies (Low → High)
+                </p>
+                
+                <p><strong style="color: #ffd15c;">Y-Axis: Health Consciousness</strong></p>
+                <p style="font-size: 0.9em; color: #627282; margin-bottom: 10px;">
+                    Your mental and emotional engagement with health (Low → High)
+                </p>
+                
+                <p><strong style="color: #7cc6fe;">Z-Axis: Readiness to Change</strong></p>
+                <p style="font-size: 0.9em; color: #627282;">
+                    Your current motivation: Ready, Developing, or Not Yet
+                </p>
+            </div>
+        </div>
+
+        <div class="main-grid-container">
+            <h2>Find Your Health Persona</h2>
+            
+            <div class="grid-wrapper">
+                <div class="axis-y axis-label">
+                    <span>High</span>
+                    <span>← Health Consciousness →</span>
+                    <span>Low</span>
+                </div>
+                
+                <div>
+                    <div class="persona-grid">
+                        <!-- Top row - High consciousness -->
+                        <div class="persona-box" data-persona="7">
+                            <div class="persona-emoji">😰</div>
+                            <div class="persona-number">7</div>
+                            <div class="persona-name">Overwhelmed Follower</div>
+                        </div>
+                        <div class="persona-box" data-persona="8">
+                            <div class="persona-emoji">🔍</div>
+                            <div class="persona-number">8</div>
+                            <div class="persona-name">Solution Seeker</div>
+                        </div>
+                        <div class="persona-box" data-persona="9">
+                            <div class="persona-emoji">🔥</div>
+                            <div class="persona-number">9</div>
+                            <div class="persona-name">Health Obsessor</div>
+                        </div>
+                        
+                        <!-- Middle row - Medium consciousness -->
+                        <div class="persona-box" data-persona="4">
+                            <div class="persona-emoji">😟</div>
+                            <div class="persona-number">4</div>
+                            <div class="persona-name">Worried Reactor</div>
+                        </div>
+                        <div class="persona-box" data-persona="5">
+                            <div class="persona-emoji">🤔</div>
+                            <div class="persona-number">5</div>
+                            <div class="persona-name">Concerned Procrastinator</div>
+                        </div>
+                        <div class="persona-box" data-persona="6">
+                            <div class="persona-emoji">⚡</div>
+                            <div class="persona-number">6</div>
+                            <div class="persona-name">Anxious Optimizer</div>
+                        </div>
+                        
+                        <!-- Bottom row - Low consciousness -->
+                        <div class="persona-box" data-persona="1">
+                            <div class="persona-emoji">😎</div>
+                            <div class="persona-number">1</div>
+                            <div class="persona-name">Carefree Responder</div>
+                        </div>
+                        <div class="persona-box" data-persona="2">
+                            <div class="persona-emoji">🤸</div>
+                            <div class="persona-number">2</div>
+                            <div class="persona-name">Casual Flexer</div>
+                        </div>
+                        <div class="persona-box" data-persona="3">
+                            <div class="persona-emoji">🎯</div>
+                            <div class="persona-number">3</div>
+                            <div class="persona-name">Proactive Preventer</div>
+                        </div>
+                    </div>
+                    
+                    <div class="axis-x axis-label">
+                        <span>Low</span>
+                        <span>← Ability to Manage →</span>
+                        <span>High</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instruction-box">
+                <p>
+                    <strong>Click any persona</strong> to explore its overview and three variations (R, D, N).
+                    Each variation represents a different stage of readiness within that persona type.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="modal-icon" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #3a7d44, #6fb98f); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;"></div>
+                    <div>
+                        <h2 id="modal-title" style="font-size: 1.6em; color: #2c3e50; margin-bottom: 3px;"></h2>
+                        <p id="modal-tagline" style="color: #3a7d44; font-size: 1em; font-style: italic;"></p>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="switchTab('overview')">Overview</button>
+                <button class="modal-tab" onclick="switchTab('R')">R - Ready</button>
+                <button class="modal-tab" onclick="switchTab('D')">D - Developing</button>
+                <button class="modal-tab" onclick="switchTab('N')">N - Not Yet</button>
+            </div>
+            
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Persona data
+        const personaData = {
+            1: {
+                name: "Carefree Responder",
+                tagline: "The Eternal Optimist",
+                quote: "Why worry? I'll deal with them when they show up. Right now, I'm too busy enjoying life to worry about what-ifs.",
+                essence: "You're that friend who orders dessert without checking calories, who laughs when others panic about missing a workout. Health isn't your religion—life is.",
+                worldview: "Your philosophy is simple: the body is remarkably good at taking care of itself. Health happens in the background while you focus on what matters.",
+                strengths: "Your superpower is actually living while others are preparing to live. Stress barely touches you.",
+                shadows: "Your body sends signals, little postcards from the future. Sometimes these whispers become shouts.",
+                variations: {
+                    R: {
+                        title: "The Awakening Optimist",
+                        description: "Something got your attention. You're willing to try this 'health' thing, but on your terms.",
+                        mindset: "Fine, I'll download the app. But if it starts lecturing me, we're done."
+                    },
+                    D: {
+                        title: "The Curious Skeptic",
+                        description: "You're peeking behind the health curtain, still not convinced but... curious.",
+                        mindset: "I'm not saying I believe all this, but I'm not NOT saying it either."
+                    },
+                    N: {
+                        title: "The Blissful Denier",
+                        description: "Health? That's future-you's problem. Wellness culture looks like anxiety with a green smoothie.",
+                        mindset: "I'll cross that bridge when I'm on fire."
+                    }
+                }
+            },
+            2: {
+                name: "Casual Flexer",
+                tagline: "The Balanced Experimenter",
+                quote: "Yeah, I think about health. I've got my gym membership (I even use it sometimes!). Balance, you know?",
+                essence: "You're the goldilocks of health consciousness—not too hot, not too cold, just right.",
+                worldview: "Perfect health at the cost of a life worth living is a bad trade. You'll take 'pretty good' with joy.",
+                strengths: "You avoid both extremes—denial and obsession. Your flexibility means you can adapt without rigid protocols.",
+                shadows: "Sometimes 'balanced' is code for 'comfortable,' and comfort doesn't always lead to growth.",
+                variations: {
+                    R: {
+                        title: "The Committed Flexer",
+                        description: "You found your groove—health habits that fit your life without taking it over.",
+                        mindset: "This is working. I feel good, I look good, and I still have a life."
+                    },
+                    D: {
+                        title: "The Strategic Experimenter",
+                        description: "You're in testing mode, building a personalized approach through trial and error.",
+                        mindset: "Let's see what actually makes a difference versus what's just hype."
+                    },
+                    N: {
+                        title: "The Comfortable Coaster",
+                        description: "You know you should do more, but... meh. Your gym membership is more of a donation.",
+                        mindset: "I'll get serious about health when I need to. Right now, I'm fine-ish."
+                    }
+                }
+            },
+            3: {
+                name: "Proactive Preventer",
+                tagline: "The Effortless Master",
+                quote: "Taking care of my health is just part of my daily routine now. It's about quality of life.",
+                essence: "You've achieved health mastery without anxiety. Health is integrated seamlessly into your life.",
+                worldview: "You see health as an investment, not a burden. Prevention isn't paranoia—it's wisdom.",
+                strengths: "You've cracked the code: consistency without obsession, knowledge without paralysis.",
+                shadows: "Your mastery can become a comfort zone. Your identity might be more tied to habits than you realize.",
+                variations: {
+                    R: {
+                        title: "The Optimizing Master",
+                        description: "You're refining an already excellent system. You're curious about great, not just good.",
+                        mindset: "I've mastered the basics. What's next?"
+                    },
+                    D: {
+                        title: "The System Builder",
+                        description: "You're making health automatic through consistent execution until it becomes second nature.",
+                        mindset: "Discipline now, freedom later."
+                    },
+                    N: {
+                        title: "The Dormant Expert",
+                        description: "You know exactly what to do—you've done it before. But life got complicated.",
+                        mindset: "I know better. I'll get back to it when things calm down."
+                    }
+                }
+            },
+            4: {
+                name: "Worried Reactor",
+                tagline: "The Anxious Observer",
+                quote: "I'm worried about my health, but I'm too scared to get checked out – what if it's really bad?",
+                essence: "You live between awareness and action, caught in a loop of noticing, worrying, and avoiding.",
+                worldview: "Health feels like a minefield. The internet confirms your worst fears while your mind tries to talk you down.",
+                strengths: "Your hypervigilance means you notice things others miss. You're cautious and thorough.",
+                shadows: "Anxiety becomes its own health problem. Avoidance might mean missing early intervention.",
+                variations: {
+                    R: {
+                        title: "The Brave Worrier",
+                        description: "You're taking action despite the fear. Learning that knowing is better than wondering.",
+                        mindset: "I'm scared, but I'm doing it anyway. Courage isn't the absence of fear."
+                    },
+                    D: {
+                        title: "The Cautious Learner",
+                        description: "You're building bridges between worry and action, learning to distinguish real concerns from noise.",
+                        mindset: "Maybe I can understand this without panicking."
+                    },
+                    N: {
+                        title: "The Frozen Observer",
+                        description: "Paralyzed by possibilities, stuck in observation mode. Your Google history is a medical encyclopedia.",
+                        mindset: "I can't handle knowing. But I can't handle not knowing."
+                    }
+                }
+            },
+            5: {
+                name: "Concerned Procrastinator",
+                tagline: "The Informed Delayer",
+                quote: "I know something is not right, I know I should be doing more. I just don't have the time now.",
+                essence: "You're caught between impressive knowledge and absent action. An expert in everything except execution.",
+                worldview: "Health is a complex puzzle that needs solving before starting. Perfect is the enemy of good.",
+                strengths: "Your research skills are exceptional. You'll never fall for fads or dangerous trends.",
+                shadows: "Analysis paralysis is real. The gap between what you know and do creates guilt.",
+                variations: {
+                    R: {
+                        title: "The Active Strategist",
+                        description: "Finally implementing that knowledge. Learning that 'good enough' beats 'perfect' never.",
+                        mindset: "Done is better than perfect. Progress over perfection."
+                    },
+                    D: {
+                        title: "The Preparing Practitioner",
+                        description: "In active preparation mode—but with deadlines this time. Building the bridge to action.",
+                        mindset: "Almost ready. But this time, 'almost' has an expiration date."
+                    },
+                    N: {
+                        title: "The Eternal Researcher",
+                        description: "Your browser has 47 tabs open about health. Knowledge grows while habits remain unchanged.",
+                        mindset: "I need to understand everything before I begin anything."
+                    }
+                }
+            },
+            6: {
+                name: "Anxious Optimizer",
+                tagline: "The Vigilant Controller",
+                quote: "I need to keep monitoring my mind and body signals and adjust my everyday routine.",
+                essence: "You've weaponized knowledge in the war against health uncertainty. Control is your coping mechanism.",
+                worldview: "Health is a constant battle against entropy. Every metric tracked is a potential disaster avoided.",
+                strengths: "Your knowledge is encyclopedic, your discipline enviable. You're a prevention success story.",
+                shadows: "The anxiety driving your habits undermines their benefits. Perfect health remains forever out of reach.",
+                variations: {
+                    R: {
+                        title: "The Systematic Optimizer",
+                        description: "Channeling anxiety into systematic action. Learning that 95% is good enough.",
+                        mindset: "Control what I can, accept what I can't, track everything just in case."
+                    },
+                    D: {
+                        title: "The Protocol Builder",
+                        description: "Constructing your comprehensive health system. Building the fortress against uncertainty.",
+                        mindset: "If I can just get the system perfect, then I'll be safe."
+                    },
+                    N: {
+                        title: "The Paralyzed Expert",
+                        description: "You know too much. Every choice has risks. Analysis paralysis at expert level.",
+                        mindset: "There's too much that could go wrong. I need more research."
+                    }
+                }
+            },
+            7: {
+                name: "Overwhelmed Follower",
+                tagline: "The Dependent Seeker",
+                quote: "I'll go to see doctor and fix it quick to make sure everything is ok. No matter if I need medication.",
+                essence: "Health feels like a foreign language. You'd rather trust experts completely than understand it yourself.",
+                worldview: "Health is the domain of professionals. There's a pill or procedure for every problem.",
+                strengths: "You don't pretend to know more than you do. You follow medical advice precisely.",
+                shadows: "Your dependence leaves you vulnerable. Without health literacy, you can't advocate for yourself.",
+                variations: {
+                    R: {
+                        title: "The Guided Learner",
+                        description: "You've found trusted guides. Small successes are building confidence.",
+                        mindset: "If someone shows me exactly what to do, I can do it."
+                    },
+                    D: {
+                        title: "The Cautious Student",
+                        description: "Dipping your toes into health education. Discovering it's not as complicated as it seemed.",
+                        mindset: "Maybe I can understand the basics."
+                    },
+                    N: {
+                        title: "The Avoidant Dependent",
+                        description: "Even seeking help feels too overwhelming. Caught between needing support and fearing what they'll find.",
+                        mindset: "I can't deal with this. Maybe if I ignore it, it'll resolve itself."
+                    }
+                }
+            },
+            8: {
+                name: "Solution Seeker",
+                tagline: "The Eternal Searcher",
+                quote: "I'm concerned about my health and I know I should be doing more. But it's overwhelming. Am I doing it right?",
+                essence: "You're on an endless quest for the holy grail of health. Hope springs eternal with each new discovery.",
+                worldview: "Health is a puzzle with a perfect solution—you just haven't found it yet. The answer is out there.",
+                strengths: "Your openness to new approaches means you'll eventually find what works. Hope keeps you going.",
+                shadows: "Constant searching prevents consistent results. You might be addicted to the hope of transformation.",
+                variations: {
+                    R: {
+                        title: "The Committed Experimenter",
+                        description: "Still experimenting, but strategically now. Learning that consistency matters more than perfection.",
+                        mindset: "Let me give this a real chance before moving on. 90 days minimum."
+                    },
+                    D: {
+                        title: "The Strategic Seeker",
+                        description: "Developing criteria for what you try. Searching smarter, not harder.",
+                        mindset: "What am I actually looking for? What would 'good enough' look like?"
+                    },
+                    N: {
+                        title: "The Research Addict",
+                        description: "Collecting solutions without implementing any. Your bookmark folder is a graveyard of intentions.",
+                        mindset: "The next article might have THE answer. Better keep looking."
+                    }
+                }
+            },
+            9: {
+                name: "Health Obsessor",
+                tagline: "The Perfectionist Warrior",
+                quote: "Every meal is calculated, every workout optimized. But it's never enough. Perfect health is a moving target.",
+                essence: "You've made health your religion, your identity. Winning every battle while losing the war for peace of mind.",
+                worldview: "Health requires total vigilance. Moderation is mediocrity. If you're not optimizing, you're declining.",
+                strengths: "Your knowledge is exceptional, your discipline unmatched. You inspire others to take health seriously.",
+                shadows: "The cure has become its own disease. Your optimization obsession creates the stress you're avoiding.",
+                variations: {
+                    R: {
+                        title: "The Mindful Optimizer",
+                        description: "Still optimizing, but for life, not just longevity. Discovering that 95% might be better than 100%.",
+                        mindset: "Excellence over perfection. Sustainability over extremism."
+                    },
+                    D: {
+                        title: "The System Expander",
+                        description: "Building ever-more comprehensive health systems. Complexity increases as you chase diminishing returns.",
+                        mindset: "If some is good, more is better. There's always another level."
+                    },
+                    N: {
+                        title: "The Paralyzed Perfectionist",
+                        description: "Standards so high that no protocol meets them. Knowledge has become the barrier to action.",
+                        mindset: "If I can't do it perfectly, why bother?"
+                    }
+                }
+            }
+        };
+
+        let selectedPersona = null;
+        let currentTab = 'overview';
+
+        // Add click handlers to persona boxes
+        document.querySelectorAll('.persona-box').forEach(box => {
+            box.addEventListener('click', function() {
+                const personaId = this.dataset.persona;
+                openModal(personaId);
+            });
+        });
+
+        function openModal(personaId) {
+            selectedPersona = personaId;
+            const persona = personaData[personaId];
+            
+            // Update modal header
+            document.getElementById('modal-icon').textContent = personaId;
+            document.getElementById('modal-title').textContent = persona.name;
+            document.getElementById('modal-tagline').textContent = persona.tagline;
+            
+            // Reset to overview tab
+            currentTab = 'overview';
+            updateTabs();
+            
+            // Show modal
+            document.getElementById('modal').classList.add('active');
+            
+            // Update selected state
+            document.querySelectorAll('.persona-box').forEach(box => {
+                box.classList.remove('selected');
+            });
+            document.querySelector(`[data-persona="${personaId}"]`).classList.add('selected');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.querySelectorAll('.persona-box').forEach(box => {
+                box.classList.remove('selected');
+            });
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            updateTabs();
+        }
+
+        function updateTabs() {
+            // Update tab buttons
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                if (tab.textContent.includes('Overview') && currentTab === 'overview') {
+                    tab.classList.add('active');
+                } else if (tab.textContent.includes(`${currentTab} -`) && currentTab !== 'overview') {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Update tab titles with variation names
+            const persona = personaData[selectedPersona];
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                if (tab.textContent.includes('R -')) {
+                    tab.textContent = `R - ${persona.variations.R.title.replace('The ', '')}`;
+                } else if (tab.textContent.includes('D -')) {
+                    tab.textContent = `D - ${persona.variations.D.title.replace('The ', '')}`;
+                } else if (tab.textContent.includes('N -')) {
+                    tab.textContent = `N - ${persona.variations.N.title.replace('The ', '')}`;
+                }
+            });
+            
+            // Update content
+            const modalBody = document.getElementById('modal-body');
+            
+            if (currentTab === 'overview') {
+                modalBody.innerHTML = `
+                    <div class="quote-box">"${persona.quote}"</div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #3a7d44; margin-bottom: 10px;">Your Essence</h3>
+                        <p>${persona.essence}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #3a7d44; margin-bottom: 10px;">Your Worldview</h3>
+                        <p>${persona.worldview}</p>
+                    </div>
+                    
+                    <div class="strength-shadow-grid">
+                        <div class="strength-box">
+                            <h4 style="color: #3a7d44; margin-bottom: 8px;">Your Strengths</h4>
+                            <p style="font-size: 0.9em;">${persona.strengths}</p>
+                        </div>
+                        
+                        <div class="shadow-box">
+                            <h4 style="color: #ff7e67; margin-bottom: 8px;">Your Shadows</h4>
+                            <p style="font-size: 0.9em;">${persona.shadows}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const variation = persona.variations[currentTab];
+                const badgeColor = currentTab === 'R' ? '#6fb98f' : currentTab === 'D' ? '#ffd15c' : '#ff7e67';
+                
+                modalBody.innerHTML = `
+                    <div style="background: ${badgeColor}10; padding: 20px; border-radius: 12px; border: 2px solid ${badgeColor}50;">
+                        <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <span style="background: ${badgeColor}; color: white; padding: 4px 12px; border-radius: 8px; font-weight: bold;">
+                                ${selectedPersona}${currentTab}
+                            </span>
+                            ${variation.title}
+                        </h3>
+                        
+                        <p style="margin-bottom: 20px; line-height: 1.7;">
+                            ${variation.description}
+                        </p>
+                        
+                        <div style="padding-top: 15px; border-top: 1px solid ${badgeColor}30;">
+                            <h4 style="margin-bottom: 10px;">Mindset</h4>
+                            <p style="font-style: italic; background: white; padding: 10px; border-radius: 8px;">
+                                "${variation.mindset}"
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
